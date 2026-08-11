@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 
-const title = "스마트 팩토리 종이비행기 레이스";
+const title = "스마트 팩토리를 이겨라";
 const description = "Samsung CSR Fair 스마트 팩토리 부스 실시간 생산 리더보드";
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -54,7 +54,7 @@ export default function LeaderboardPage() {
             alt="스마트 팩토리 이겨라 로고"
           />
           <div>
-            <h1>종이비행기 스마트 생산 레이스</h1>
+            <h1>스마트 팩토리를 이겨라</h1>
           </div>
         </div>
         <div className="header-actions">

@@ -45,8 +45,8 @@ test("renders the projector leaderboard", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>스마트 팩토리 종이비행기 레이스<\/title>/i);
-  assert.match(html, /종이비행기 스마트 생산 레이스/);
+  assert.match(html, /<title>스마트 팩토리를 이겨라<\/title>/i);
+  assert.match(html, /스마트 팩토리를 이겨라/);
   assert.match(html, /smart-factory-logo\.png/);
   assert.match(html, /생산 리더보드/);
   assert.match(html, /다음 팀의 항공사 선택을 기다리고 있습니다/);
