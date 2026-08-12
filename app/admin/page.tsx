@@ -341,6 +341,7 @@ export default function AdminPage() {
           <h1>부스 운영 센터</h1>
         </div>
         <div className="admin-header__links">
+          <Link className="display-link" href="/hall-of-fame" target="_blank">명예의 전당 <span>↗</span></Link>
           <Link className="display-link" href="/checkin" target="_blank">추첨 화면 <span>↗</span></Link>
           <Link className="display-link" href="/" target="_blank">전광판 <span>↗</span></Link>
         </div>

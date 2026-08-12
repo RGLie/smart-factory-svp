@@ -75,3 +75,13 @@ test("renders the laptop airline check-in", async () => {
   assert.match(html, /운명의 항공사를/);
   assert.match(html, /랜덤 항공사 뽑기/);
 });
+
+test("renders the hall of fame", async () => {
+  const response = await render("/hall-of-fame");
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /명예의 전당/);
+  assert.match(html, /SMART FACTORY CHAMPIONS/);
+  assert.match(html, /최고의 생산 기록을 세운 모든 팀을 축하합니다/);
+  assert.match(html, /최종 기록을 불러오고 있습니다/);
+});
