@@ -72,7 +72,7 @@ export const eventSettings = pgTable(
     }),
     baselineScore: integer("baseline_score").notNull().default(0),
     baselineAirlineCode: text("baseline_airline_code").notNull().default("KE"),
-    baselineAirlineName: text("baseline_airline_name").notNull().default("대한항공"),
+    baselineAirlineName: text("baseline_airline_name").notNull().default("F팀"),
     baselineAirlineColor: text("baseline_airline_color").notNull().default("#5D9CEC"),
     baselineAirlineId: integer("baseline_airline_id"),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
