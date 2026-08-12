@@ -125,7 +125,7 @@ export default function AdminPage() {
     }
     return [
       {
-        id: 0,
+        id: state.baseline.airlineId ?? 0,
         code: state.baseline.airlineCode,
         name: state.baseline.airlineName,
         color: state.baseline.airlineColor,
@@ -137,9 +137,11 @@ export default function AdminPage() {
     ];
   }, [
     airlinePool,
+    state?.baseline.airlineId,
     state?.baseline.airlineCode,
     state?.baseline.airlineColor,
     state?.baseline.airlineName,
+    state?.baseline.logoUrl,
   ]);
 
   const remaining = state

@@ -22,6 +22,13 @@
       "when": 1786496310920,
       "tag": "0002_milky_luckman",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786497309281,
+      "tag": "0003_vengeful_jackal",
+      "breakpoints": true
     }
   ]
 }
