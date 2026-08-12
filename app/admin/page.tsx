@@ -410,6 +410,7 @@ export default function AdminPage() {
             <div><span className="section-number">03</span><h2>랜덤 항공사 관리</h2></div>
             <span className="team-count">{airlinePool.length}개</span>
           </div>
+          <p className="airline-pool-help">자체 제작한 항공사와 로고만 등록해 주세요. 삭제해도 이미 참가한 팀의 기록은 유지됩니다.</p>
           <form className="airline-pool-form" onSubmit={(event) => void submitAirline(event)}>
             <label><span>항공사명</span><input className="text-input" maxLength={20} placeholder="예: SVP 항공" value={poolName} onChange={(event) => setPoolName(event.target.value)} /></label>
             <label><span>코드</span><input className="text-input" maxLength={4} placeholder="SVP" value={poolCode} onChange={(event) => setPoolCode(event.target.value.toUpperCase())} /></label>
@@ -450,13 +451,14 @@ export default function AdminPage() {
                     <span>{busy === `logo-airline-${airline.id}` ? "저장 중" : airline.logoUrl ? "로고 교체" : "로고 등록"}</span>
                   </label>
                   <button
+                    className="remove-airline-button"
                     type="button"
                     onClick={() => {
-                      if (window.confirm(`${airline.name}을 랜덤 추첨 목록에서 삭제할까요?`)) void deleteAirline(airline);
+                      if (window.confirm(`${airline.name}을 랜덤 추첨 목록에서 삭제할까요?\n이미 참가한 팀의 기록은 유지됩니다.`)) void deleteAirline(airline);
                     }}
                     disabled={busy !== null || airlinePool.length <= 1}
                     aria-label={`${airline.name} 추첨 목록에서 삭제`}
-                  >×</button>
+                  >항공사 삭제</button>
                 </div>
               </div>
             ))}

@@ -1153,9 +1153,18 @@ input:focus-visible {
 
 .airline-pool-form {
   display: grid;
-  grid-template-columns: minmax(9rem, 1fr) 5.5rem 4rem;
+  grid-template-columns: minmax(0, 1fr) minmax(5.5rem, 0.34fr) 5rem;
   align-items: end;
   gap: 0.6rem;
+}
+
+.airline-pool-help {
+  margin: -0.35rem 0 1rem;
+  color: #748187;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.55;
+  word-break: keep-all;
 }
 
 .airline-pool-form label > span {
@@ -1166,9 +1175,11 @@ input:focus-visible {
 }
 
 .airline-pool-form .button--register {
+  grid-column: 3;
   min-height: 2.8rem;
   margin-top: 0;
   padding: 0 1rem;
+  white-space: nowrap;
 }
 
 .airline-logo-field {
@@ -1232,18 +1243,18 @@ input:focus-visible {
 
 .airline-pool-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.5rem;
   margin-top: 1rem;
 }
 
 .airline-pool-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.75rem;
   min-width: 0;
-  padding: 0.58rem 0.65rem;
+  padding: 0.7rem 0.75rem;
   border: 1px solid #deded8;
   border-radius: 0.7rem;
   background: white;
@@ -1251,13 +1262,14 @@ input:focus-visible {
 
 .airline-pool-item > .airline-mark {
   min-width: 0;
+  overflow: hidden;
 }
 
 .airline-pool-actions {
   display: flex;
   align-items: center;
   flex: 0 0 auto;
-  gap: 0.35rem;
+  gap: 0.45rem;
 }
 
 .replace-logo-button {
@@ -1285,20 +1297,21 @@ input:focus-visible {
   opacity: 0.45;
 }
 
-.airline-pool-actions > button {
+.remove-airline-button {
   flex: 0 0 auto;
-  width: 1.8rem;
-  height: 1.8rem;
-  border: 0;
-  border-radius: 50%;
-  background: #f0eeea;
-  color: #7a8588;
+  min-height: 1.8rem;
+  padding: 0 0.58rem;
+  border: 1px solid #efc9c0;
+  border-radius: 999px;
+  background: #fff3f0;
+  color: #a8422a;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.61rem;
   font-weight: 900;
+  white-space: nowrap;
 }
 
-.airline-pool-actions > button:disabled {
+.remove-airline-button:disabled {
   cursor: not-allowed;
   opacity: 0.4;
 }
@@ -2426,7 +2439,7 @@ input:focus-visible {
   }
 
   .airline-pool-form {
-    grid-template-columns: 1fr 5rem 4rem;
+    grid-template-columns: minmax(0, 1fr) 5.5rem 4.5rem;
   }
 
   .airline-pool-form .button--register {
@@ -2613,11 +2626,34 @@ input:focus-visible {
   }
 
   .airline-pool-form {
-    grid-template-columns: 1fr 4.5rem;
+    grid-template-columns: minmax(0, 1fr) 4.8rem;
   }
 
-  .airline-pool-form > label:first-child {
+  .airline-pool-form > label:first-child,
+  .airline-logo-field {
     grid-column: 1 / -1;
+  }
+
+  .airline-pool-form .button--register {
+    grid-column: 1 / -1;
+  }
+
+  .airline-pool-item {
+    grid-template-columns: 1fr;
+  }
+
+  .airline-pool-actions {
+    justify-content: flex-end;
+    width: 100%;
+    padding-top: 0.55rem;
+    border-top: 1px solid #ecece7;
+  }
+
+  .replace-logo-button span,
+  .remove-airline-button {
+    min-height: 2.2rem;
+    padding: 0 0.72rem;
+    font-size: 0.68rem;
   }
 }
 

@@ -62,6 +62,7 @@ test("renders the mobile operator console", async () => {
   assert.match(html, /운영팀 기준 기록/);
   assert.match(html, /랜덤 항공사 관리/);
   assert.match(html, /로고 이미지/);
+  assert.match(html, /삭제해도 이미 참가한 팀의 기록은 유지됩니다/);
   assert.match(html, /실시간 생산 입력/);
 });
 
