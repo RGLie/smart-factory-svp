@@ -26,7 +26,6 @@ export default function LeaderboardPage() {
     return Math.max(0, state.timer.remainingSeconds - (clock - receivedAt) / 1000);
   }, [clock, receivedAt, state]);
 
-  const totalPlanes = state?.teams.reduce((sum, team) => sum + team.score, 0) ?? 0;
   const isFinished = state?.timer.status === "finished" || (state?.timer.status === "running" && remainingSeconds <= 0);
   const timerStatus = isFinished ? "finished" : state?.timer.status || "idle";
   const currentRank = state?.currentTeam
@@ -112,11 +111,6 @@ export default function LeaderboardPage() {
             <div className="leaderboard-heading">
               <div>
                 <h2 id="leaderboard-title">생산 리더보드</h2>
-              </div>
-              <div className="total-production">
-                <span>총 생산량</span>
-                <strong>{totalPlanes}</strong>
-                <em>대</em>
               </div>
             </div>
 

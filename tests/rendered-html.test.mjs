@@ -50,6 +50,7 @@ test("renders the projector leaderboard", async () => {
   assert.match(html, /smart-factory-logo\.png/);
   assert.match(html, /생산 리더보드/);
   assert.match(html, /다음 팀의 항공사 선택을 기다리고 있습니다/);
+  assert.doesNotMatch(html, /총 생산량/);
   assert.doesNotMatch(html, /PRODUCTION WINDOW|종이 수령|비행기 접기|활주로 통과|항공사 마킹/);
 });
 

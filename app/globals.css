@@ -471,36 +471,6 @@ input:focus-visible {
   letter-spacing: -0.055em;
 }
 
-.total-production {
-  display: flex;
-  align-items: baseline;
-  gap: 0.35rem;
-  padding-left: clamp(1rem, 2vw, 2.1rem);
-  border-left: 1px solid var(--line);
-}
-
-.total-production span {
-  margin-right: 0.45rem;
-  color: #7a878d;
-  font-size: clamp(1.05rem, 1.2vw, 1.28rem);
-  font-weight: 800;
-}
-
-.total-production strong {
-  color: var(--orange);
-  font-family: ui-monospace, monospace;
-  font-size: clamp(2.35rem, 3.7vw, 3.9rem);
-  font-weight: 900;
-  letter-spacing: -0.08em;
-}
-
-.total-production em {
-  color: var(--ink-soft);
-  font-size: 1rem;
-  font-style: normal;
-  font-weight: 800;
-}
-
 .ranking-list {
   display: flex;
   flex: 1;
