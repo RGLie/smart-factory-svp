@@ -1,20 +1,17 @@
-import { getAirline } from "../lib/airlines";
-
 type AirlineMarkProps = {
   code: string;
   name: string;
   color: string;
+  logoUrl?: string | null;
   compact?: boolean;
 };
 
-export function AirlineMark({ code, name, color, compact = false }: AirlineMarkProps) {
-  const airline = getAirline(code);
-
+export function AirlineMark({ code, name, color, logoUrl, compact = false }: AirlineMarkProps) {
   return (
     <div className={`airline-mark${compact ? " airline-mark--compact" : ""}`}>
-      {airline ? (
+      {logoUrl ? (
         <span className="airline-mark__logo" aria-hidden="true">
-          <img src={airline.logo} alt="" />
+          <img src={logoUrl} alt="" />
         </span>
       ) : (
         <span
@@ -30,11 +27,9 @@ export function AirlineMark({ code, name, color, compact = false }: AirlineMarkP
   );
 }
 
-export function AirlineHero({ code, name, color }: Omit<AirlineMarkProps, "compact">) {
-  const airline = getAirline(code);
-
-  if (airline) {
-    return <img className="airline-hero__image" src={airline.logo} alt={`${name} 로고`} />;
+export function AirlineHero({ code, name, color, logoUrl }: Omit<AirlineMarkProps, "compact">) {
+  if (logoUrl) {
+    return <img className="airline-hero__image" src={logoUrl} alt={`${name} 로고`} />;
   }
 
   return (

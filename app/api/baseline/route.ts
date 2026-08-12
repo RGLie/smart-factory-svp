@@ -1,39 +1,42 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { getDb } from "../../../db";
-import { eventSettings } from "../../../db/schema";
+import { airlinePool, eventSettings } from "../../../db/schema";
 
 type BaselinePayload = {
   score?: number;
-  airlineCode?: string;
-  airlineName?: string;
-  airlineColor?: string;
+  airlineId?: number;
 };
 
 export async function PATCH(request: Request) {
   try {
     const payload = (await request.json()) as BaselinePayload;
     const score = Math.floor(Number(payload.score));
-    const airlineCode = payload.airlineCode?.trim().slice(0, 4).toUpperCase() ?? "";
-    const airlineName = payload.airlineName?.trim() ?? "";
-    const airlineColor = /^#[0-9a-f]{6}$/i.test(payload.airlineColor ?? "")
-      ? payload.airlineColor!
-      : "#4A63D8";
+    const airlineId = Number(payload.airlineId);
 
     if (!Number.isFinite(score) || score < 0) {
       return Response.json({ error: "기준 기록은 0 이상의 숫자로 입력해 주세요." }, { status: 400 });
     }
-    if (!airlineCode || !airlineName) {
+    if (!Number.isInteger(airlineId) || airlineId <= 0) {
       return Response.json({ error: "기준 기록의 항공사를 선택해 주세요." }, { status: 400 });
     }
 
     const db = getDb();
+    const [airline] = await db
+      .select()
+      .from(airlinePool)
+      .where(and(eq(airlinePool.id, airlineId), eq(airlinePool.active, true)))
+      .limit(1);
+    if (!airline) {
+      return Response.json({ error: "선택한 항공사를 찾을 수 없습니다." }, { status: 404 });
+    }
     await db
       .update(eventSettings)
       .set({
         baselineScore: score,
-        baselineAirlineCode: airlineCode,
-        baselineAirlineName: airlineName,
-        baselineAirlineColor: airlineColor,
+        baselineAirlineId: airline.id,
+        baselineAirlineCode: airline.code,
+        baselineAirlineName: airline.name,
+        baselineAirlineColor: airline.color,
         updatedAt: new Date().toISOString(),
       })
       .where(eq(eventSettings.id, 1));

@@ -15,6 +15,39 @@ const STATUS_TEXT: Record<TimerStatus, string> = {
   finished: "종료",
 };
 
+async function compressLogo(file: File) {
+  if (!/^image\/(?:png|jpe?g|webp)$/i.test(file.type)) {
+    throw new Error("PNG, JPG 또는 WebP 이미지를 선택해 주세요.");
+  }
+  if (file.size > 8 * 1024 * 1024) {
+    throw new Error("원본 로고 파일은 8MB 이하여야 합니다.");
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = () => reject(new Error("로고 이미지를 읽지 못했습니다."));
+      element.src = objectUrl;
+    });
+    const scale = Math.min(1, 720 / image.naturalWidth, 300 / image.naturalHeight);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("로고 이미지를 처리하지 못했습니다.");
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/webp", 0.86);
+    if (dataUrl.length > 450_000) {
+      throw new Error("로고 이미지가 너무 큽니다. 더 단순한 이미지를 선택해 주세요.");
+    }
+    return dataUrl;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export default function AdminPage() {
   const { state, receivedAt, error, refresh } = useBoothState(1000);
   const [teamName, setTeamName] = useState("");
@@ -23,6 +56,7 @@ export default function AdminPage() {
   const [poolName, setPoolName] = useState("");
   const [poolCode, setPoolCode] = useState("");
   const [poolColor, setPoolColor] = useState("#4A63D8");
+  const [poolLogoDataUrl, setPoolLogoDataUrl] = useState("");
   const [baselineScore, setBaselineScore] = useState(0);
   const [baselineAirlineCode, setBaselineAirlineCode] = useState("");
   const [minutes, setMinutes] = useState(5);
@@ -74,6 +108,7 @@ export default function AdminPage() {
   }, [
     state?.baseline.airlineCode,
     state?.baseline.airlineColor,
+    state?.baseline.logoUrl,
     state?.baseline.airlineName,
     state?.baseline.score,
   ]);
@@ -94,7 +129,9 @@ export default function AdminPage() {
         code: state.baseline.airlineCode,
         name: state.baseline.airlineName,
         color: state.baseline.airlineColor,
+        logoUrl: state.baseline.logoUrl,
         createdAt: "",
+        updatedAt: "",
       },
       ...airlinePool,
     ];
@@ -153,9 +190,7 @@ export default function AdminPage() {
         method: "POST",
         body: JSON.stringify({
           name: teamName,
-          airlineCode: airline.code,
-          airlineName: airline.name,
-          airlineColor: airline.color,
+          airlineId: airline.id,
         }),
       },
       "add-team",
@@ -166,8 +201,8 @@ export default function AdminPage() {
 
   async function submitAirline(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!poolName.trim() || !poolCode.trim()) {
-      setToast({ type: "error", message: "항공사명과 코드를 모두 입력해 주세요." });
+    if (!poolName.trim() || !poolCode.trim() || !poolLogoDataUrl) {
+      setToast({ type: "error", message: "항공사명, 코드와 로고 이미지를 모두 등록해 주세요." });
       return;
     }
     setBusy("add-airline");
@@ -175,18 +210,60 @@ export default function AdminPage() {
       const response = await fetch("/api/airlines", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: poolName, code: poolCode, color: poolColor }),
+        body: JSON.stringify({
+          name: poolName,
+          code: poolCode,
+          color: poolColor,
+          logoDataUrl: poolLogoDataUrl,
+        }),
       });
       const payload = (await response.json()) as { error?: string };
       if (!response.ok) throw new Error(payload.error || "항공사를 추가하지 못했습니다.");
       setPoolName("");
       setPoolCode("");
+      setPoolLogoDataUrl("");
       await loadAirlinePool();
       setToast({ type: "success", message: "랜덤 추첨 항공사를 추가했습니다." });
     } catch (caught) {
       setToast({
         type: "error",
         message: caught instanceof Error ? caught.message : "항공사를 추가하지 못했습니다.",
+      });
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function chooseNewAirlineLogo(file: File) {
+    try {
+      setPoolLogoDataUrl(await compressLogo(file));
+      setToast({ type: "success", message: "로고 이미지를 준비했습니다." });
+    } catch (caught) {
+      setToast({
+        type: "error",
+        message: caught instanceof Error ? caught.message : "로고 이미지를 처리하지 못했습니다.",
+      });
+    }
+  }
+
+  async function replaceAirlineLogo(airline: AirlinePoolItem, file: File) {
+    setBusy(`logo-airline-${airline.id}`);
+    try {
+      const logoDataUrl = await compressLogo(file);
+      const response = await fetch("/api/airlines", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: airline.id, logoDataUrl }),
+      });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(payload.error || "항공사 로고를 저장하지 못했습니다.");
+      await loadAirlinePool();
+      await refresh();
+      setToast({ type: "success", message: `${airline.name} 로고를 저장했습니다.` });
+    } catch (caught) {
+      setToast({
+        type: "error",
+        message: caught instanceof Error ? caught.message : "항공사 로고를 저장하지 못했습니다.",
       });
     } finally {
       setBusy(null);
@@ -228,9 +305,7 @@ export default function AdminPage() {
         method: "PATCH",
         body: JSON.stringify({
           score: baselineScore,
-          airlineCode: airline.code,
-          airlineName: airline.name,
-          airlineColor: airline.color,
+          airlineId: airline.id,
         }),
       },
       "baseline",
@@ -339,20 +414,50 @@ export default function AdminPage() {
             <label><span>항공사명</span><input className="text-input" maxLength={20} placeholder="예: SVP 항공" value={poolName} onChange={(event) => setPoolName(event.target.value)} /></label>
             <label><span>코드</span><input className="text-input" maxLength={4} placeholder="SVP" value={poolCode} onChange={(event) => setPoolCode(event.target.value.toUpperCase())} /></label>
             <label className="airline-color-field"><span>색상</span><input type="color" value={poolColor} onChange={(event) => setPoolColor(event.target.value)} aria-label="항공사 색상" /></label>
+            <label className={`airline-logo-field${poolLogoDataUrl ? " airline-logo-field--ready" : ""}`}>
+              <span>로고 이미지</span>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                onChange={(event) => {
+                  const file = event.currentTarget.files?.[0];
+                  event.currentTarget.value = "";
+                  if (file) void chooseNewAirlineLogo(file);
+                }}
+              />
+              <span className="airline-logo-picker">
+                {poolLogoDataUrl ? <img src={poolLogoDataUrl} alt="새 항공사 로고 미리보기" /> : <b>이미지 선택</b>}
+              </span>
+            </label>
             <button className="button button--register" type="submit" disabled={busy !== null}>{busy === "add-airline" ? "추가 중…" : "추첨 항공사 추가"}</button>
           </form>
           <div className="airline-pool-list">
             {airlinePool.map((airline) => (
               <div className="airline-pool-item" key={airline.id}>
                 <AirlineMark {...airline} compact />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (window.confirm(`${airline.name}을 랜덤 추첨 목록에서 삭제할까요?`)) void deleteAirline(airline);
-                  }}
-                  disabled={busy !== null || airlinePool.length <= 1}
-                  aria-label={`${airline.name} 추첨 목록에서 삭제`}
-                >×</button>
+                <div className="airline-pool-actions">
+                  <label className="replace-logo-button">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      disabled={busy !== null}
+                      onChange={(event) => {
+                        const file = event.currentTarget.files?.[0];
+                        event.currentTarget.value = "";
+                        if (file) void replaceAirlineLogo(airline, file);
+                      }}
+                    />
+                    <span>{busy === `logo-airline-${airline.id}` ? "저장 중" : airline.logoUrl ? "로고 교체" : "로고 등록"}</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm(`${airline.name}을 랜덤 추첨 목록에서 삭제할까요?`)) void deleteAirline(airline);
+                    }}
+                    disabled={busy !== null || airlinePool.length <= 1}
+                    aria-label={`${airline.name} 추첨 목록에서 삭제`}
+                  >×</button>
+                </div>
               </div>
             ))}
           </div>
@@ -398,7 +503,7 @@ export default function AdminPage() {
                     <span className="mini-rank">{index + 1}</span>
                     <div>
                       <strong>{team.name}{team.id === state.currentTeam?.id && <em>현재 팀</em>}</strong>
-                      <AirlineMark code={team.airlineCode} name={team.airlineName} color={team.airlineColor} compact />
+                      <AirlineMark code={team.airlineCode} name={team.airlineName} color={team.airlineColor} logoUrl={team.logoUrl} compact />
                     </div>
                   </div>
                   <div className="score-controls">

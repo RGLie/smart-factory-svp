@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   bigint,
+  boolean,
   check,
   index,
   integer,
@@ -19,6 +20,7 @@ export const teams = pgTable(
     airlineCode: text("airline_code").notNull(),
     airlineName: text("airline_name").notNull(),
     airlineColor: text("airline_color").notNull(),
+    airlineId: integer("airline_id"),
     score: integer("score").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()
@@ -41,7 +43,12 @@ export const airlinePool = pgTable(
     code: text("code").notNull(),
     name: text("name").notNull(),
     color: text("color").notNull().default("#4A63D8"),
+    logoDataUrl: text("logo_data_url"),
+    active: boolean("active").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
       .notNull()
       .defaultNow(),
   },
@@ -67,6 +74,7 @@ export const eventSettings = pgTable(
     baselineAirlineCode: text("baseline_airline_code").notNull().default("KE"),
     baselineAirlineName: text("baseline_airline_name").notNull().default("대한항공"),
     baselineAirlineColor: text("baseline_airline_color").notNull().default("#5D9CEC"),
+    baselineAirlineId: integer("baseline_airline_id"),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
       .notNull()
       .default(sql`CURRENT_TIMESTAMP`),

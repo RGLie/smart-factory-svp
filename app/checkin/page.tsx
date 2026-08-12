@@ -54,9 +54,7 @@ export default function CheckinPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: teamName,
-          airlineCode: selected.code,
-          airlineName: selected.name,
-          airlineColor: selected.color,
+          airlineId: selected.id,
           setActive: true,
         }),
       });
@@ -90,6 +88,7 @@ export default function CheckinPage() {
               code={completedTeam.airlineCode}
               name={completedTeam.airlineName}
               color={completedTeam.airlineColor}
+              logoUrl={completedTeam.logoUrl}
             />
           </div>
           <p>랜덤 항공사 배정 완료</p>
@@ -163,7 +162,12 @@ export default function CheckinPage() {
               <>
                 <span className="random-result-kicker">YOUR AIRLINE</span>
                 <div className="random-result-logo">
-                  <AirlineHero code={selected.code} name={selected.name} color={selected.color} />
+                  <AirlineHero
+                    code={selected.code}
+                    name={selected.name}
+                    color={selected.color}
+                    logoUrl={selected.logoUrl}
+                  />
                 </div>
                 <strong>{selected.name}</strong>
                 <small>{selected.code}</small>

@@ -79,6 +79,7 @@ export default function LeaderboardPage() {
                   code={state.currentTeam.airlineCode}
                   name={state.currentTeam.airlineName}
                   color={state.currentTeam.airlineColor}
+                  logoUrl={state.currentTeam.logoUrl}
                 />
               </div>
               <div className="current-flight__stats">
@@ -133,6 +134,7 @@ export default function LeaderboardPage() {
                       code={state.baseline.airlineCode}
                       name={state.baseline.airlineName}
                       color={state.baseline.airlineColor}
+                      logoUrl={state.baseline.logoUrl}
                     />
                     <div className="team-name"><strong>운영팀</strong></div>
                     <div className="score-block"><strong>{state.baseline.score}</strong><span>대</span></div>
@@ -143,7 +145,12 @@ export default function LeaderboardPage() {
                     return (
                       <li className={`ranking-row ranking-row--${Math.min(rank, 4)}${team.id === state.currentTeam?.id ? " ranking-row--current" : ""}`} key={team.id}>
                         <span className="rank-number">{String(rank).padStart(2, "0")}</span>
-                        <AirlineMark code={team.airlineCode} name={team.airlineName} color={team.airlineColor} />
+                        <AirlineMark
+                          code={team.airlineCode}
+                          name={team.airlineName}
+                          color={team.airlineColor}
+                          logoUrl={team.logoUrl}
+                        />
                         <div className="team-name"><strong>{team.name}</strong></div>
                         <div className="score-block"><strong>{team.score}</strong><span>대</span></div>
                       </li>

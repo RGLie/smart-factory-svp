@@ -4,6 +4,8 @@ export type Team = {
   airlineCode: string;
   airlineName: string;
   airlineColor: string;
+  airlineId: number | null;
+  logoUrl: string | null;
   score: number;
   createdAt: string;
   updatedAt: string;
@@ -14,7 +16,9 @@ export type AirlinePoolItem = {
   code: string;
   name: string;
   color: string;
+  logoUrl: string | null;
   createdAt: string;
+  updatedAt: string;
 };
 
 export type BaselineRecord = {
@@ -22,6 +26,8 @@ export type BaselineRecord = {
   airlineCode: string;
   airlineName: string;
   airlineColor: string;
+  airlineId: number | null;
+  logoUrl: string | null;
 };
 
 export type TimerStatus = "idle" | "running" | "paused" | "finished";

@@ -1,6 +1,7 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import { getDb } from "../../../db";
-import { eventSettings, teams } from "../../../db/schema";
+import { airlinePool, eventSettings, teams } from "../../../db/schema";
+import { getAirlineLogoUrl } from "../../../lib/airline-logo";
 
 export const dynamic = "force-dynamic";
 
@@ -18,12 +19,19 @@ export async function GET() {
   try {
     const db = getDb();
     const now = Date.now();
-    const [teamRows, settingsRows] = await Promise.all([
+    const [teamRows, settingsRows, airlineRows] = await Promise.all([
       db
         .select()
         .from(teams)
         .orderBy(desc(teams.score), asc(teams.createdAt), asc(teams.id)),
       db.select().from(eventSettings).where(eq(eventSettings.id, 1)).limit(1),
+      db
+        .select({
+          id: airlinePool.id,
+          hasLogo: sql<boolean>`${airlinePool.logoDataUrl} IS NOT NULL`,
+          updatedAt: airlinePool.updatedAt,
+        })
+        .from(airlinePool),
     ]);
     const settings = settingsRows[0];
 
@@ -54,16 +62,30 @@ export async function GET() {
         .where(eq(eventSettings.id, 1));
     }
 
+    const airlinesById = new Map(airlineRows.map((airline) => [airline.id, airline]));
+    const publicTeams = teamRows.map((team) => ({
+      ...team,
+      logoUrl: getAirlineLogoUrl(
+        team.airlineId ? airlinesById.get(team.airlineId) : null,
+      ),
+    }));
+
     return Response.json(
       {
-        teams: teamRows,
+        teams: publicTeams,
         currentTeam:
-          teamRows.find((team) => team.id === settings.currentTeamId) ?? null,
+          publicTeams.find((team) => team.id === settings.currentTeamId) ?? null,
         baseline: {
           score: settings.baselineScore,
+          airlineId: settings.baselineAirlineId,
           airlineCode: settings.baselineAirlineCode,
           airlineName: settings.baselineAirlineName,
           airlineColor: settings.baselineAirlineColor,
+          logoUrl: getAirlineLogoUrl(
+            settings.baselineAirlineId
+              ? airlinesById.get(settings.baselineAirlineId)
+              : null,
+          ),
         },
         timer: {
           durationSeconds: settings.durationSeconds,

@@ -1,13 +1,12 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "../../../db";
-import { eventSettings, teams } from "../../../db/schema";
+import { airlinePool, eventSettings, teams } from "../../../db/schema";
+import { getAirlineLogoUrl } from "../../../lib/airline-logo";
 
 type TeamPayload = {
   id?: number;
   name?: string;
-  airlineCode?: string;
-  airlineName?: string;
-  airlineColor?: string;
+  airlineId?: number;
   score?: number;
   delta?: number;
   setActive?: boolean;
@@ -32,18 +31,30 @@ export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as TeamPayload;
     const name = payload.name?.trim() ?? "";
-    const airlineCode = payload.airlineCode?.trim().slice(0, 4).toUpperCase() ?? "";
-    const airlineName = payload.airlineName?.trim() ?? "";
-    const airlineColor = payload.airlineColor?.trim() ?? "#5D9CEC";
+    const airlineId = Number(payload.airlineId);
 
-    if (!name || !airlineCode || !airlineName) {
+    if (!name || !Number.isInteger(airlineId) || airlineId <= 0) {
       return Response.json({ error: "팀 이름과 항공사를 모두 입력해 주세요." }, { status: 400 });
     }
 
     const db = getDb();
+    const [airline] = await db
+      .select()
+      .from(airlinePool)
+      .where(and(eq(airlinePool.id, airlineId), eq(airlinePool.active, true)))
+      .limit(1);
+    if (!airline) {
+      return Response.json({ error: "선택한 항공사를 찾을 수 없습니다." }, { status: 404 });
+    }
     const [team] = await db
       .insert(teams)
-      .values({ name, airlineCode, airlineName, airlineColor })
+      .values({
+        name,
+        airlineId: airline.id,
+        airlineCode: airline.code,
+        airlineName: airline.name,
+        airlineColor: airline.color,
+      })
       .returning();
     if (payload.setActive) {
       await db
@@ -51,7 +62,10 @@ export async function POST(request: Request) {
         .set({ currentTeamId: team.id, updatedAt: new Date().toISOString() })
         .where(eq(eventSettings.id, 1));
     }
-    return Response.json({ team }, { status: 201 });
+    return Response.json(
+      { team: { ...team, logoUrl: getAirlineLogoUrl(airline) } },
+      { status: 201 },
+    );
   } catch (error) {
     return errorResponse(error);
   }
